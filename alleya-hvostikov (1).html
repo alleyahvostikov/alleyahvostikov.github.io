@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аллея хвостиков — звёздное небо памяти</title>
+<meta name="description" content="Выкупите звёздочку памяти за 100 ₽ — она будет навсегда светиться с именем вашего питомца.">
+<style>
+  :root{ --gold:#ffd77a; --gold2:#ffdf9e; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'Segoe UI',Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% 0%, #101c3a 0%, #0a1024 45%, #060918 100%);
+    color:#e8ecf7; min-height:100vh; text-align:center; padding-bottom:60px; }
+  header{padding:42px 16px 10px;}
+  h1{font-size:clamp(26px,5vw,44px); font-weight:600; letter-spacing:.5px;
+     background:linear-gradient(180deg,#fff, var(--gold));
+     -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .sub{color:#9fb0d0; max-width:640px; margin:12px auto 0; line-height:1.55; font-size:clamp(14px,2.5vw,17px);}
+  .counter{margin:20px auto 4px; display:inline-block; padding:8px 22px; border:1px solid rgba(255,215,122,.35);
+     border-radius:999px; color:var(--gold); font-size:15px; background:rgba(255,215,122,.06);}
+  .sky-wrap{max-width:980px; margin:22px auto 0; padding:0 12px;}
+  #sky{width:100%; max-width:880px; border-radius:14px; cursor:crosshair;
+     border:1px solid rgba(140,160,220,.25); background:#050810; display:block; margin:0 auto;
+     box-shadow:0 0 60px rgba(80,110,220,.15);}
+  .hint{color:#8fa2c6; font-size:13px; margin-top:10px;}
+  .searchbar{max-width:520px; margin:26px auto 0; padding:0 16px; display:flex; gap:8px;}
+  .searchbar input{flex:1; padding:12px 16px; border-radius:10px; border:1px solid rgba(140,160,220,.35);
+     background:rgba(255,255,255,.05); color:#fff; font-size:15px; outline:none;}
+  .searchbar input::placeholder{color:#7d8fb3;}
+  .searchbar button{padding:12px 18px; border-radius:10px; border:none; cursor:pointer;
+     background:linear-gradient(180deg,#3b55a8,#2a3f80); color:#fff; font-size:15px;}
+  .steps{max-width:820px; margin:44px auto 0; padding:0 18px; display:grid;
+     grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; text-align:left;}
+  .step{background:rgba(255,255,255,.04); border:1px solid rgba(140,160,220,.18); border-radius:14px; padding:18px;}
+  .step .n{display:inline-block; width:30px; height:30px; line-height:30px; text-align:center;
+     border-radius:50%; background:var(--gold); color:#1a1206; font-weight:700; margin-bottom:10px;}
+  .step b{display:block; margin-bottom:6px; color:var(--gold2);}
+  .step p{color:#b9c4dd; font-size:14px; line-height:1.5;}
+  footer{margin-top:56px; padding:0 18px; color:#7d8fb3; font-size:13px; line-height:1.8;}
+  footer a{color:var(--gold2); text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  .req{margin-top:18px; color:#9fb0d0;}
+  #overlay{position:fixed; inset:0; background:rgba(3,6,16,.8); display:none;
+     align-items:center; justify-content:center; z-index:50; padding:16px;}
+  #modal{background:#131b33; border:1px solid rgba(255,215,122,.4); border-radius:16px;
+     max-width:420px; width:100%; padding:26px 24px; text-align:center;
+     box-shadow:0 0 80px rgba(255,215,122,.15);}
+  #modal .star-num{font-size:34px; color:var(--gold); font-weight:700; margin:8px 0;}
+  #modal .pet{font-size:20px; color:#fff; font-weight:600; margin:6px 0;}
+  #modal .txt{color:#b9c4dd; font-size:14px; line-height:1.55; margin:8px 0 14px;}
+  #modal .btn{display:inline-block; padding:13px 26px; border-radius:10px; text-decoration:none;
+     font-size:16px; font-weight:600; color:#1a1206;
+     background:linear-gradient(180deg,var(--gold2),#e9b84d); margin-top:4px;}
+  #modal .close{display:block; margin-top:16px; color:#8fa2c6; cursor:pointer; font-size:13px;}
+  #modal .free-note{color:#9fb0d0; font-size:13px; line-height:1.6; margin-top:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✦ Аллея хвостиков</h1>
+  <p class="sub">Звёздное небо памяти о любимых питомцах. Выберите свободную звёздочку,
+     оплатите 100 ₽ — и она навсегда засветится с кличкой вашего друга и вашей надписью.</p>
+  <div class="counter" id="counter">Освещено звёздочек: 0 из 10 000</div>
+</header>
+
+<div class="sky-wrap">
+  <canvas id="sky" width="880" height="880" aria-label="Карта звёздочек памяти"></canvas>
+  <p class="hint">Нажмите на звёздочку, чтобы выбрать её. Тусклые звёздочки — свободны.</p>
+</div>
+
+<div class="searchbar">
+  <input type="text" id="searchInput" placeholder="Поиск по кличке питомца…" maxlength="60">
+  <button id="searchBtn">Найти</button>
+</div>
+
+<div class="steps">
+  <div class="step"><span class="n">1</span><b>Выберите звёздочку</b>
+    <p>Нажмите на свободную (тусклую) звёздочку и запомните её номер — он будет адресом памяти навсегда.</p></div>
+  <div class="step"><span class="n">2</span><b>Оплатите 100 ₽</b>
+    <p>На странице оплаты укажите номер звёздочки, кличку питомца, надпись и свои данные. Оплата — СБП или картой, чек придёт на почту автоматически.</p></div>
+  <div class="step"><span class="n">3</span><b>Звёздочка загорится</b>
+    <p>После проверки надписи (до 3 рабочих дней) ваша звёздочка засветится на небе с кличкой питомца. Отказ — с полным возвратом денег.</p></div>
+</div>
+
+<footer>
+  <p><a href="#" id="lnkOffer">Публичная оферта</a> · <a href="#" id="lnkPolicy">Политика конфиденциальности</a> · <a href="#" id="lnkConsent">Согласие на обработку ПД</a></p>
+  <p class="req">Исполнитель: Борщёва Анна Алексеевна · плательщик НПД · ИНН 552104998520 ·<br>
+  Email: istokipamyati@yandex.ru · Тел.: +7 996 397-80-40 · Омская область, р.п. Москаленки</p>
+  <p>© 2026 Аллея хвостиков. В память о тех, кто навсегда остался рядом.</p>
+</footer>
+
+<div id="overlay">
+  <div id="modal">
+    <div class="star-num" id="mNum"></div>
+    <div class="pet" id="mPet"></div>
+    <div class="txt" id="mTxt"></div>
+    <a class="btn" id="mBtn" href="#">Закрепить за 100 ₽</a>
+    <div class="free-note" id="mNote"></div>
+    <span class="close" id="mClose">Закрыть ✕</span>
+  </div>
+</div>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   НАСТРОЙКИ — редактируется только этот блок!
+   ═══════════════════════════════════════════════════════════════ */
+
+// Платёжная ссылка Продамуса (вставить после подключения Продамуса)
+var PAY_URL = "";
+
+// Ссылки на документы (вставить после публикации на сайте)
+var DOC_OFFER   = "#";
+var DOC_POLICY  = "#";
+var DOC_CONSENT = "#";
+
+// ЗАНЯТЫЕ ЗВЁЗДОЧКИ. Формат: номер: { name: "кличка", text: "надпись" }
+// Чтобы закрепить звёздочку — добавьте строку вида  4237: { name:"Барсик", text:"Любимому другу" },
+// и сохраните файл. Звёздочка сразу засветится на карте и станет видимой в поиске.
+var TAKEN = {
+};
+
+/* ═══════════════ Картинка неба ═══════════════ */
+
+var GRID = 100;               // 100 × 100 = 10 000 звёздочек
+var PAD = 20;                 // отступ внутри холста, px
+var CELL, R;
+
+var cv = document.getElementById('sky');
+var ctx = cv.getContext('2d');
+var base = document.createElement('canvas');   // кэш статичной картинки
+var bctx = base.getContext('2d');
+
+function sizes(){
+  CELL = (cv.width - PAD*2) / GRID;
+  R = Math.max(1.1, CELL*0.26);
+}
+sizes();
+
+function pos(n){ // номер 1..10000 -> координаты
+  var i = n-1;
+  return { x: PAD + (i % GRID)*CELL + CELL/2, y: PAD + Math.floor(i/GRID)*CELL + CELL/2 };
+}
+
+function drawBase(){
+  sizes();
+  base.width = cv.width; base.height = cv.height;
+  bctx.clearRect(0,0,base.width,base.height);
+  var g = bctx.createRadialGradient(base.width/2, base.height/2, 40, base.width/2, base.height/2, base.width*0.75);
+  g.addColorStop(0,'rgba(60,80,150,0.10)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  bctx.fillStyle = g; bctx.fillRect(0,0,base.width,base.height);
+  for(var n=1;n<=10000;n++){
+    if(TAKEN[n]) continue;
+    var p = pos(n);
+    bctx.beginPath();
+    bctx.arc(p.x, p.y, R, 0, Math.PI*2);
+    bctx.fillStyle = 'rgba(120,140,190,0.55)';
+    bctx.fill();
+  }
+  for(var k in TAKEN){
+    var q = pos(+k);
+    var glow = bctx.createRadialGradient(q.x,q.y,0,q.x,q.y,R*6);
+    glow.addColorStop(0,'rgba(255,215,122,0.55)');
+    glow.addColorStop(1,'rgba(255,215,122,0)');
+    bctx.fillStyle = glow;
+    bctx.beginPath(); bctx.arc(q.x,q.y,R*6,0,Math.PI*2); bctx.fill();
+    bctx.beginPath(); bctx.arc(q.x,q.y,R*1.9,0,Math.PI*2);
+    bctx.fillStyle = '#ffe2a0'; bctx.fill();
+  }
+  render();
+}
+
+var hoverN = null, highlightN = null;
+
+function render(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.drawImage(base,0,0);
+  if(highlightN){ pulse(highlightN, '#7cf0ff', R*5); }
+  if(hoverN && hoverN!==highlightN){ pulse(hoverN, '#ffffff', R*3.2); }
+}
+
+function pulse(n, color, radius){
+  var p = pos(n);
+  ctx.beginPath(); ctx.arc(p.x,p.y,radius,0,Math.PI*2);
+  ctx.strokeStyle = color; ctx.lineWidth = 1.6;
+  ctx.shadowColor = color; ctx.shadowBlur = 10;
+  ctx.stroke(); ctx.shadowBlur = 0;
+}
+
+function starAt(evt){
+  var r = cv.getBoundingClientRect();
+  var x = (evt.clientX - r.left) * (cv.width / r.width);
+  var y = (evt.clientY - r.top)  * (cv.height / r.height);
+  var col = Math.floor((x - PAD)/CELL), row = Math.floor((y - PAD)/CELL);
+  if(col<0||row<0||col>=GRID||row>=GRID) return null;
+  return row*GRID + col + 1;
+}
+
+cv.addEventListener('click', function(e){
+  var n = starAt(e); if(!n) return;
+  showModal(n);
+});
+cv.addEventListener('mousemove', function(e){
+  var n = starAt(e);
+  if(n !== hoverN){ hoverN = n; render(); }
+});
+cv.addEventListener('mouseleave', function(){ hoverN = null; render(); });
+
+/* ═══════════════ Всплывающее окно ═══════════════ */
+
+var overlay = document.getElementById('overlay');
+document.getElementById('mClose').onclick = function(){ overlay.style.display='none'; };
+overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.style.display='none'; });
+
+function showModal(n){
+  var num = document.getElementById('mNum');
+  var pet = document.getElementById('mPet');
+  var txt = document.getElementById('mTxt');
+  var btn = document.getElementById('mBtn');
+  var note= document.getElementById('mNote');
+  if(TAKEN[n]){
+    num.textContent = 'Звёздочка № ' + n;
+    pet.textContent = TAKEN[n].name;
+    txt.textContent = TAKEN[n].text || 'Вечная память и светлая звезда.';
+    btn.style.display = 'none'; note.textContent = '';
+  } else {
+    num.textContent = 'Звёздочка № ' + n;
+    pet.textContent = 'Свободна';
+    txt.textContent = 'Эта звёздочка ещё не занята — её можно закрепить за вашим питомцем.';
+    btn.style.display = 'inline-block';
+    btn.href = PAY_URL || '#';
+    btn.setAttribute('aria-disabled', PAY_URL ? 'false' : 'true');
+    note.textContent = 'На странице оплаты укажите номер звёздочки ' + n +
+      ', кличку питомца и надпись. Звёздочка закрепляется после оплаты и проверки надписи (до 3 рабочих дней).';
+  }
+  overlay.style.display = 'flex';
+}
+
+/* ═══════════════ Поиск по кличке ═══════════════ */
+
+function normalize(s){ return (s||'').toLowerCase().replace(/ё/g,'е').trim(); }
+
+function doSearch(){
+  var q = normalize(document.getElementById('searchInput').value);
+  if(!q){ highlightN = null; render(); return; }
+  var found = null;
+  for(var k in TAKEN){
+    if(normalize(TAKEN[k].name).indexOf(q) !== -1){ found = +k; break; }
+  }
+  if(found){
+    highlightN = found; render();
+    document.getElementById('counter').textContent =
+      'Найдено: звёздочка № ' + found + ' — «' + TAKEN[found].name + '»';
+    setTimeout(function(){ document.getElementById('counter').textContent = counterText(); }, 6000);
+    showModal(found);
+  } else {
+    highlightN = null; render();
+    document.getElementById('counter').textContent = 'Питомец с такой кличкой пока не найден';
+    setTimeout(function(){ document.getElementById('counter').textContent = counterText(); }, 6000);
+  }
+}
+document.getElementById('searchBtn').onclick = doSearch;
+document.getElementById('searchInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') doSearch();
+});
+
+/* ═══════════════ Счётчик и ссылки ═══════════════ */
+
+function counterText(){
+  var c = Object.keys(TAKEN).length;
+  return 'Освещено звёздочек: ' + c + ' из 10 000';
+}
+document.getElementById('counter').textContent = counterText();
+document.getElementById('lnkOffer').href   = DOC_OFFER;
+document.getElementById('lnkPolicy').href  = DOC_POLICY;
+document.getElementById('lnkConsent').href = DOC_CONSENT;
+
+drawBase();
+</script>
+</body>
+</html>
